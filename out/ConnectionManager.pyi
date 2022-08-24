@@ -1,4 +1,4 @@
-import pandas
+import pandas as pd
 import psycopg2.errors
 import psycopg2.extensions
 import sshtunnel
@@ -26,5 +26,10 @@ class ConnectionManager:
 
 
 class TickerManager(ConnectionManager):
-    def add_dataframe_to_database(self, df: pandas.DataFrame) -> None: ...
+    def add_dataframe_to_database(self, df: pd.DataFrame) -> None: ...
     def get_all_tickers_and_last_date(self) -> list[tuple]: ...
+
+
+class MediaManager(ConnectionManager):
+    def get_list_of_status_id(self) -> list[int]: ...
+    def add_dataframe_to_database(self, df: pd.DataFrame) -> None: ...
