@@ -5,8 +5,8 @@ import scipy.interpolate as interp
 
 
 #Read File
-file = pd.read_csv('/Users/equaeciadavis/kDrive/Shared/RIVACUBE/FAO/DanoneSA.csv')
-file2 = pd.read_csv('/Users/equaeciadavis/PycharmProjects/TwitterAPI/MonthlyEmotion.csv')
+file = pd.read_csv('file with open prices')
+file2 = pd.read_csv('file with emotion analysis')
 
 #Plot Open Prices Per Month
 def plot_df(x, y, title="", xlabel='Date', ylabel='Price', dpi=100):
