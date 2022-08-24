@@ -1,11 +1,13 @@
+import array
 from dotenv import load_dotenv
 import os
 import psycopg2
 import psycopg2.extensions
 import psycopg2.errors
 import sshtunnel
+import enlighten
 
-import pandas
+import pandas as pd
 
 from typing import Literal
 
@@ -97,7 +99,7 @@ class ConnectionManager:
 
 
 class TickerManager(ConnectionManager):
-    def add_dataframe_to_database(self, df: pandas.DataFrame) -> None:
+    def add_dataframe_to_database(self, df: pd.DataFrame) -> None:
         cur = self.conn.cursor()
 
         # Importation des données
@@ -138,3 +140,88 @@ class TickerManager(ConnectionManager):
         """.format(os.getenv("DB_TICKER")))
 
         return cur.fetchall()
+
+
+class MediaManager(ConnectionManager):
+    def get_list_of_status_id(self) -> list[int]:
+        print("Recuperation de liste de status id en cours...")
+        cur = self.conn.cursor()
+        cur.execute("SELECT status_id FROM {}".format(os.getenv("DB_MEDIA")))
+
+        # Transforme la liste de tuples en simple liste
+        return [x[0] for x in cur.fetchall()]
+
+    def add_dataframe_to_database(self, df: pd.DataFrame) -> None:
+        cur = self.conn.cursor()
+
+        # Suppression des lignes dupliquées
+        df.drop_duplicates(subset=['status_id'], keep='first', inplace=True)
+
+        # Suppression des lignes ne contenant pas de date
+        df.dropna(subset=["created_at"], inplace=True)
+
+        df.reset_index(inplace=True)
+
+        df.drop(columns=["index", "Unnamed: 0"], inplace=True)
+
+        # Ne garde dans le dataframe que les lignes ne contenant pas de status id deja present dans la base de donnée
+        df = df[~df['status_id'].isin(self.get_list_of_status_id())]
+
+        # Recuperation du nombre de lignes
+        l = df.shape[0]
+
+        # Verification de la valeur max
+        #df["mentions_screen_name"] = df["reply_to_screen_name"].str.len()
+
+        #print(df.sort_values("retweet_count", ascending=False).retweet_count.head())
+
+        # Importation des données
+        with enlighten.Counter(total=l, desc="", unit="ligne") as pbar2:
+            for row in df.itertuples():
+                pbar2.update()
+
+                reply_to_status_id = None if pd.isna(
+                    row.reply_to_status_id) else row.reply_to_status_id
+
+                reply_to_user_id = None if pd.isna(
+                    row.reply_to_user_id) else row.reply_to_user_id
+
+                reply_to_screen_name = None if pd.isna(
+                    row.reply_to_screen_name) else row.reply_to_screen_name
+
+                if pd.isna(row.mentions_screen_name):
+                    mentions_screen_name = None
+                elif row.mentions_screen_name[:2] == "c(":
+                    mentions_screen_name = row.mentions_screen_name[3:-2].split(
+                        "\", \"")
+                else:
+                    mentions_screen_name = [row.mentions_screen_name]
+
+                description = None if pd.isna(
+                    row.description) else row.description
+
+                cur.execute("""
+                    INSERT INTO {} (status_id, user_id, created_at, screen_name, text, source, display_text_width, reply_to_status_id, reply_to_user_id, reply_to_screen_name, is_quote, is_retweet, favorite_count, retweet_count, mentions_screen_name, lang, description, htag)
+                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                    """.format(os.getenv("DB_MEDIA")), (
+                    row.status_id,
+                    row.user_id,
+                    row.created_at,
+                    row.screen_name,
+                    row.text,
+                    row.source,
+                    row.display_text_width,
+                    reply_to_status_id,
+                    reply_to_user_id,
+                    reply_to_screen_name,
+                    row.is_quote,
+                    row.is_retweet,
+                    row.favorite_count,
+                    row.retweet_count,
+                    mentions_screen_name,
+                    row.lang,
+                    description,
+                    row.htag
+                )
+                )
+            self.conn.commit()
