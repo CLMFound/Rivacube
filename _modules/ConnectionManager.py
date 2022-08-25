@@ -151,7 +151,7 @@ class MediaManager(ConnectionManager):
         # Transforme la liste de tuples en simple liste
         return [x[0] for x in cur.fetchall()]
 
-    def add_dataframe_to_database(self, df: pd.DataFrame) -> None:
+    def add_dataframe_to_database(self, df: pd.DataFrame) -> int:
         cur = self.conn.cursor()
 
         # Suppression des lignes dupliquées
@@ -175,6 +175,7 @@ class MediaManager(ConnectionManager):
 
         #print(df.sort_values("retweet_count", ascending=False).retweet_count.head())
 
+        errors = 0
         # Importation des données
         with enlighten.Counter(total=l, desc="", unit="ligne") as pbar2:
             for row in df.itertuples():
@@ -200,28 +201,35 @@ class MediaManager(ConnectionManager):
                 description = None if pd.isna(
                     row.description) else row.description
 
-                cur.execute("""
-                    INSERT INTO {} (status_id, user_id, created_at, screen_name, text, source, display_text_width, reply_to_status_id, reply_to_user_id, reply_to_screen_name, is_quote, is_retweet, favorite_count, retweet_count, mentions_screen_name, lang, description, htag)
-                    VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
-                    """.format(os.getenv("DB_MEDIA")), (
-                    row.status_id,
-                    row.user_id,
-                    row.created_at,
-                    row.screen_name,
-                    row.text,
-                    row.source,
-                    row.display_text_width,
-                    reply_to_status_id,
-                    reply_to_user_id,
-                    reply_to_screen_name,
-                    row.is_quote,
-                    row.is_retweet,
-                    row.favorite_count,
-                    row.retweet_count,
-                    mentions_screen_name,
-                    row.lang,
-                    description,
-                    row.htag
-                )
-                )
+                try:
+                    cur.execute("""
+                        INSERT INTO {} (status_id, user_id, created_at, screen_name, text, source, display_text_width, reply_to_status_id, reply_to_user_id, reply_to_screen_name, is_quote, is_retweet, favorite_count, retweet_count, mentions_screen_name, lang, description, htag)
+                        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+                        """.format(os.getenv("DB_MEDIA")), (
+                        row.status_id,
+                        row.user_id,
+                        row.created_at,
+                        row.screen_name,
+                        row.text,
+                        row.source,
+                        row.display_text_width,
+                        reply_to_status_id,
+                        reply_to_user_id,
+                        reply_to_screen_name,
+                        row.is_quote,
+                        row.is_retweet,
+                        row.favorite_count,
+                        row.retweet_count,
+                        mentions_screen_name,
+                        row.lang,
+                        description,
+                        row.htag
+                    )
+                    )
+                except psycopg2.errors as e:
+                    self.conn.rollback()
+                    print("L'importation de {}\nRaison: {}".format(
+                        row.status_id, e))
+                    errors += 1
             self.conn.commit()
+        return errors

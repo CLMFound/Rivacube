@@ -40,7 +40,7 @@ if __name__ == '__main__':
         t, values, time_per_file))
 
     s = time.time()
-    man.add_dataframe_to_database(df)
+    errors = man.add_dataframe_to_database(df)
     e = time.time()
 
     t = e - s
@@ -51,5 +51,6 @@ if __name__ == '__main__':
 
     man.close()
 
-# TODO: Monter le kdrive sur Ubuntu et acceder directement au CSV
-# TODO: Creer un dossier sur le Kdrive par date et y déplacer les CSV importés
+    if errors == 0:
+        # TODO: Des que j'aurai les droits sur le kdrive, creer le script de deplacement des fichiers par date
+        pass
