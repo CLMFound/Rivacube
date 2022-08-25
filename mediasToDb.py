@@ -112,16 +112,16 @@ def add_file_to_database(df: pd.DataFrame):
 
 values = len(get_all_files())
 
-curs = conn.cursor()
 
 delete = input("Y pour supprimer la table media ?\n")
 if delete == "Y":
     print("Suppression de la table media")
+    curs = conn.cursor()
     curs.execute("DELETE FROM media_media")
+    conn.commit()
+    curs.close()
 else:
     print("La table media ne sera pas supprimée")
-conn.commit()
-curs.close()
 
 df = pd.DataFrame()
 
