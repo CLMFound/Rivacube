@@ -332,13 +332,3 @@ conn.commit()
 cur.close()
 conn.close()
 # server.stop()
-
-
-'''
-TODO: Verifier les données déjà enregistrées, et n'ajouter que les nouvelles dates
-TODO: Calculer le nombre de lignes ajoutées
-TODO: ? Recuperer toutes les données d'un coup de l'API
-TODO: ? Recuperer toutes les données d'un coup de la base de donnée
-TODO: ? Creer un dictionnaire avec ces données
-TODO: ? Verifier en utiilsant la cle du dictionnaire la date
-'''
