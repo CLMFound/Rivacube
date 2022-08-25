@@ -8,8 +8,6 @@ from sshtunnel import SSHTunnelForwarder
 
 import enlighten
 
-# TODO: Creer un script de mise a jour de la table
-
 load_dotenv()  # Charge les informations depuis le fichier .env
 
 PORT = int(os.getenv("PORT"))
