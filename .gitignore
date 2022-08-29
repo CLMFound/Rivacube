@@ -7,6 +7,7 @@ ticker_ticker.csv
 ticker_ticker.xlsx
 CSV/
 CSV_Media/
+CSV_done/
 
 # Virtual environement files
 venv/
