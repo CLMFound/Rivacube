@@ -9,18 +9,18 @@ import enlighten
 
 
 def get_all_files():
-    return os.listdir(os.getcwd() + BASE_FOLDER)
+    return os.listdir(BASE_FOLDER)
 
 
 if __name__ == '__main__':
     man = MediaManager(sys.argv[1] if len(sys.argv) > 1 else "remote")
 
     if sys.argv[1] == "local":
-        BASE_FOLDER = "/home/ubuntu/drive/ICMAbox/Shared/RIVACUBE/CSV media files"
-        BASE_FINAL_FOLDER = "/home/ubuntu/drive/ICMAbox/Shared/RIVACUBE/CSV_done"
+        BASE_FOLDER = "/home/ubuntu/drive/ICMAbox/Shared/RIVACUBE/CSV media files/"
+        BASE_FINAL_FOLDER = "/home/ubuntu/drive/ICMAbox/Shared/RIVACUBE/CSV_done/"
     else:
-        BASE_FOLDER = "/CSV_Media"
-        BASE_FINAL_FOLDER = "/CSV_done"
+        BASE_FOLDER = "/Users/kevin/Developer/ICMAAE/Rivacube/CSV_Media/"
+        BASE_FINAL_FOLDER = "/Users/kevin/Developer/ICMAAE/Rivacube/CSV_done/"
 
     files = get_all_files()
     values = len(files)
@@ -32,9 +32,9 @@ if __name__ == '__main__':
     s = time.time()
     with enlighten.Counter(total=values, desc="", unit="fichier") as pbar:
         for i, file in enumerate(files):
-            if file != ".DS_Store":
+            if file != ".DS_Store" and file != "htags.csv" and file != "modop" and file != "EBAYtweets" and file != "predict.csv":
                 dfT = pd.DataFrame(pd.read_csv(
-                    r'.{}/{}'.format(BASE_FOLDER, file), sep=";"))
+                    r'{}{}'.format(BASE_FOLDER, file), sep=";"))
                 dfT["htag"] = file.split("_")[0]
                 df = pd.concat([df, dfT])
             pbar.update()
@@ -62,10 +62,19 @@ if __name__ == '__main__':
     if errors == 0:
         s = time.time()
         with enlighten.Counter(total=values, desc="", unit="fichier") as pbar:
-            for file in files():
+            for file in files:
                 # Deplace les fichiers dans YYYY_M(M?)_D(D?)
-                os.replace(BASE_FOLDER + "/file", BASE_FINAL_FOLDER +
-                           "_".join(file.split("_")[:-3]) + "/file")
+                if file != ".DS_Store" and file != "htags.csv" and file != "modop" and file != "EBAYtweets" and file != "predict.csv":
+                    day = "{:0>2d}".format(int(file[:-4].split("_")[-1]))
+                    month = "{:0>2d}".format(int(file[:-4].split("_")[-2]))
+                    year = file[:-4].split("_")[-3]
+
+                    newDir = BASE_FINAL_FOLDER + year + month + day
+                    if os.path.exists(newDir):
+                        os.replace(BASE_FOLDER + file, newDir + "/" + file)
+                    else:
+                        os.makedirs(newDir)
+                        os.replace(BASE_FOLDER + file, newDir + "/" + file)
                 pbar.update()
         e = time.time()
 
