@@ -13,10 +13,14 @@ def get_all_files():
 
 
 if __name__ == '__main__':
-    BASE_FOLDER = "/CSV_Media"
-    BASE_FINAL_FOLDER = "/CSV_done"
-
     man = MediaManager(sys.argv[1] if len(sys.argv) > 1 else "remote")
+
+    if sys.argv[1] == "local":
+        BASE_FOLDER = "/home/ubuntu/drive/ICMAbox/Shared/RIVACUBE/CSV media files"
+        BASE_FINAL_FOLDER = "/home/ubuntu/drive/ICMAbox/Shared/RIVACUBE/CSV_done"
+    else:
+        BASE_FOLDER = "/CSV_Media"
+        BASE_FINAL_FOLDER = "/CSV_done"
 
     files = get_all_files()
     values = len(files)
