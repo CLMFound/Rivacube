@@ -14,17 +14,20 @@ def get_all_files():
 
 if __name__ == '__main__':
     BASE_FOLDER = "/CSV_Media"
+    BASE_FINAL_FOLDER = "/CSV_done"
 
     man = MediaManager(sys.argv[1] if len(sys.argv) > 1 else "remote")
 
-    values = len(get_all_files())
+    files = get_all_files()
+    values = len(files)
 
     df = pd.DataFrame()
 
     # Creation du dataframe
+    print("Creation du dataframe en cours")
     s = time.time()
     with enlighten.Counter(total=values, desc="", unit="fichier") as pbar:
-        for i, file in enumerate(get_all_files()):
+        for i, file in enumerate(files):
             if file != ".DS_Store":
                 dfT = pd.DataFrame(pd.read_csv(
                     r'.{}/{}'.format(BASE_FOLDER, file), sep=";"))
@@ -39,6 +42,7 @@ if __name__ == '__main__':
     print("Recuperation des CSV effectuées en {:.2f}s pour {} fichiers, ({:.2f}s par fichier)".format(
         t, values, time_per_file))
 
+    print("Importation des données dans la base en cours")
     s = time.time()
     errors = man.add_dataframe_to_database(df)
     e = time.time()
@@ -52,5 +56,14 @@ if __name__ == '__main__':
     man.close()
 
     if errors == 0:
-        # TODO: Des que j'aurai les droits sur le kdrive, creer le script de deplacement des fichiers par date
-        pass
+        s = time.time()
+        with enlighten.Counter(total=values, desc="", unit="fichier") as pbar:
+            for file in files():
+                # Deplace les fichiers dans YYYY_M(M?)_D(D?)
+                os.replace(BASE_FOLDER + "/file", BASE_FINAL_FOLDER +
+                           "_".join(file.split("_")[:-3]) + "/file")
+                pbar.update()
+        e = time.time()
+
+        print(
+            "Le transfert des fichiers s'est effectué en {:.2f}s".format(e - s))
