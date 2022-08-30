@@ -17,10 +17,10 @@ if __name__ == '__main__':
 
     if sys.argv[1] == "local":
         BASE_FOLDER = "/home/ubuntu/drive/ICMAbox/Shared/RIVACUBE/CSV media files/"
-        BASE_FINAL_FOLDER = "/home/ubuntu/drive/ICMAbox/Shared/RIVACUBE/CSV_done/"
+        BASE_FINAL_FOLDER = "/home/ubuntu/drive/ICMAbox/Shared/RIVACUBE/CSV_media_importe/"
     else:
         BASE_FOLDER = "/Users/kevin/Developer/ICMAAE/Rivacube/CSV_Media/"
-        BASE_FINAL_FOLDER = "/Users/kevin/Developer/ICMAAE/Rivacube/CSV_done/"
+        BASE_FINAL_FOLDER = "/Users/kevin/Developer/ICMAAE/Rivacube/CSV_media_importe/"
 
     files = get_all_files()
     values = len(files)
